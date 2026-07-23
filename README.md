@@ -387,8 +387,9 @@ Example response body:
 
 ## Releases
 
-The package version is the source of truth. Release tags must match it exactly
-as `v<version>`. No package is published automatically.
+The package version is the source of truth. Release tags must match it exactly.
+For example, package version `1.1.1` uses tag `1.1.1`. No package is published
+automatically.
 
 ## License
 

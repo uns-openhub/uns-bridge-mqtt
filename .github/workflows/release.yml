@@ -3,7 +3,7 @@ name: Release validation
 on:
   push:
     tags:
-      - 'v*'
+      - '[0-9]*'
 
 permissions:
   contents: read

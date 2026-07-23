@@ -1,6 +1,6 @@
 {
   "name": "uns-bridge-mqtt",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "UNS DataHub add-on for browsing MQTT brokers and mapping payloads into UNS.",
   "license": "MIT",

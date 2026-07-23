@@ -1,0 +1,81 @@
+{
+  "name": "uns-bridge-mqtt",
+  "version": "1.1.0",
+  "private": true,
+  "description": "UNS DataHub add-on for browsing MQTT brokers and mapping payloads into UNS.",
+  "license": "MIT",
+  "author": "Aljoša Vister",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uns-datahub/uns-bridge-mqtt.git"
+  },
+  "homepage": "https://github.com/uns-datahub/uns-bridge-mqtt#readme",
+  "bugs": {
+    "url": "https://github.com/uns-datahub/uns-bridge-mqtt/issues"
+  },
+  "unsDatahub": {
+    "schemaVersion": 1,
+    "kind": "addon",
+    "controllerCompatibility": ">=7.1 <8"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "typecheck": "tsc --noEmit",
+    "build": "pnpm run clean && tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "generate-config-schema": "node ./node_modules/@uns-kit/core/dist/tools/generate-config-schema.js",
+    "generate-codegen": "graphql-code-generator --require dotenv/config --config codegen.ts",
+    "sync-uns-schema": "node ./node_modules/@uns-kit/core/dist/tools/sync-uns-schema.js",
+    "verify": "pnpm run typecheck && pnpm run lint && pnpm run build",
+    "check-release-version": "node scripts/check-release-version.mjs"
+  },
+  "dependencies": {
+    "@uns-kit/api": "^3.0.5",
+    "@uns-kit/bridge-core": "^2.0.0",
+    "@uns-kit/core": "^3.0.5",
+    "mqtt": "^5.15.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19",
+    "eslint": "^9.39.4",
+    "prettier": "^3.8.3",
+    "rimraf": "^6.1.3",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.65.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@smithy/config-resolver": "4.6.12",
+      "esbuild": "0.28.1",
+      "fast-xml-parser": "5.10.1",
+      "lodash": "4.18.1",
+      "protobufjs": "7.6.5",
+      "simple-git": "3.36.0",
+      "thrift": "0.23.0",
+      "underscore": "1.13.8",
+      "undici": "7.28.0",
+      "uuid": "11.1.1"
+    }
+  },
+  "packageManager": "pnpm@10.30.3"
+}

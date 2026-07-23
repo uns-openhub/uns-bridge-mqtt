@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "connections": [
+    {
+      "id": "factory-broker",
+      "start": false,
+      "config": {
+        "host": "localhost",
+        "port": 1883,
+        "protocol": "mqtt",
+        "clientId": "uns-bridge-mqtt-factory",
+        "clean": true,
+        "reconnectPeriod": 1000
+      },
+      "mappings": [
+        {
+          "id": "line-1-temperature",
+          "config": {
+            "topicFilter": "factory/line1/plc1/data",
+            "qos": 0,
+            "topic": "enterprise/site/area/line/line-1/",
+            "asset": "drive-1",
+            "objectType": "motor",
+            "objectId": "main",
+            "dataGroup": "mqtt-factory-broker",
+            "validityMode": "interval",
+            "expectedIntervalMs": 1000,
+            "outputs": [
+              {
+                "attribute": "temperature",
+                "extraction": {
+                  "mode": "json-path",
+                  "path": "value"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

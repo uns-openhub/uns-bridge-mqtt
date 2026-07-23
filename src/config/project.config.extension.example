@@ -1,0 +1,23 @@
+import { z } from "zod";
+import { secretValueSchema } from "@uns-kit/core/uns-config/secret-placeholders.js";
+import { hostValueSchema } from "@uns-kit/core/uns-config/host-placeholders.js";
+
+// Extend this schema with project-specific configuration sections.
+export const projectExtrasSchema = z.object({
+  pg: z.object({
+    user: z.string().min(1, "pg.user is required"),
+    host: hostValueSchema,
+    port: z.number().int().positive().default(5432),
+    ssl: z.boolean().default(false),
+    database: z.string().min(1, "pg.database is required"),
+    isPoolConnection: z.boolean().default(false),
+    password: secretValueSchema.optional(),
+  }),
+
+  caddy: z.object({
+    adminUrl: z.string().url(),
+    proxyHost: z.string().url(),
+  }),
+});
+
+export type ProjectExtras = z.infer<typeof projectExtrasSchema>;

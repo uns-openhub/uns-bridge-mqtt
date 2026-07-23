@@ -1,0 +1,560 @@
+{
+  "$ref": "#/definitions/AppConfig",
+  "definitions": {
+    "AppConfig": {
+      "type": "object",
+      "properties": {
+        "uns": {
+          "type": "object",
+          "properties": {
+            "graphql": {
+              "type": "string",
+              "format": "uri"
+            },
+            "rest": {
+              "type": "string",
+              "format": "uri"
+            },
+            "token": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "env",
+                          "description": "Load the secret from an environment variable."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Name of the environment variable to read."
+                        },
+                        "optional": {
+                          "type": "boolean",
+                          "description": "Allow the variable to be absent without throwing during resolution."
+                        },
+                        "default": {
+                          "type": "string",
+                          "description": "Fallback value when optional is true and the variable is missing."
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "key"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from process.env."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "infisical",
+                          "description": "Load the secret from Infisical."
+                        },
+                        "path": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret folder path in Infisical, e.g. '/app/database'."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret key/name inside the given path."
+                        },
+                        "optional": {
+                          "type": "boolean",
+                          "description": "Allow the secret to be absent without throwing during resolution."
+                        },
+                        "environment": {
+                          "type": "string",
+                          "description": "Infisical environment override (defaults to current mode if omitted)."
+                        },
+                        "projectId": {
+                          "type": "string",
+                          "description": "Optional Infisical project identifier when not using the default."
+                        },
+                        "default": {
+                          "type": "string",
+                          "description": "Fallback value when the secret is missing and optional resolution is allowed."
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "path",
+                        "key"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from Infisical."
+                    }
+                  ]
+                }
+              ],
+              "description": "Bearer token used for service-to-service access to the UNS instance."
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "description": "Email used when authenticating to graphql endpoint of the UNS instance."
+            },
+            "password": {
+              "$ref": "#/definitions/AppConfig/properties/uns/properties/token",
+              "description": "Password or secret value paired with the UNS email."
+            },
+            "instanceMode": {
+              "type": "string",
+              "enum": [
+                "wait",
+                "force",
+                "handover"
+              ],
+              "default": "wait"
+            },
+            "processName": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Process name used in MQTT topics and logs."
+            },
+            "handover": {
+              "type": "boolean",
+              "default": true
+            },
+            "supervisor": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Enable controller/PM2 supervisor handling for this RTT instance."
+                },
+                "restartOnExit": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Let PM2 restart the process when it exits unexpectedly."
+                },
+                "maxMemoryMb": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "description": "Optional PM2 memory restart limit in megabytes."
+                },
+                "restartOnUnhealthy": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Let the controller auto-start this instance when required system-service runtime signals are absent."
+                },
+                "unhealthyAfterMs": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "default": 60000,
+                  "description": "How long runtime signals must stay unhealthy before the controller supervisor can act."
+                },
+                "restartCooldownMs": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "default": 300000,
+                  "description": "Minimum time between controller supervisor restart attempts for this instance."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Optional PM2/controller supervisor guard settings for this RTT instance."
+            },
+            "jwksWellKnownUrl": {
+              "type": "string",
+              "format": "uri"
+            },
+            "kidWellKnownUrl": {
+              "type": "string",
+              "format": "uri"
+            },
+            "env": {
+              "type": "string",
+              "enum": [
+                "dev",
+                "staging",
+                "test",
+                "prod"
+              ],
+              "default": "dev"
+            }
+          },
+          "required": [
+            "graphql",
+            "rest",
+            "processName"
+          ],
+          "additionalProperties": false
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "adapter": {
+              "type": "string",
+              "minLength": 1,
+              "default": "udp"
+            },
+            "host": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Host or IP address used directly without placeholder."
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "inline",
+                          "description": "Use the supplied host or IP address."
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Host or IP address that should be used directly."
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "value"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved from an in-line value."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "external",
+                          "description": "Resolve the host from an external mapping."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Identifier used when resolving the host from HostResolverOptions."
+                        },
+                        "optional": {
+                          "type": "boolean",
+                          "description": "Allow the external host to be missing without throwing during resolution."
+                        },
+                        "default": {
+                          "type": "string",
+                          "description": "Fallback host when optional is true and the external entry is missing."
+                        }
+                      },
+                      "required": [
+                        "provider",
+                        "key"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "system",
+                          "description": "Resolve the host from local network interfaces."
+                        },
+                        "family": {
+                          "type": "string",
+                          "enum": [
+                            "IPv4",
+                            "IPv6"
+                          ],
+                          "default": "IPv4",
+                          "description": "Address family to return when scanning interfaces."
+                        },
+                        "interfaceName": {
+                          "type": "string",
+                          "description": "Specific interface to read (falls back to the first match when omitted)."
+                        },
+                        "optional": {
+                          "type": "boolean",
+                          "description": "Allow the interface lookup to fail without throwing during resolution."
+                        },
+                        "default": {
+                          "type": "string",
+                          "description": "Fallback host/IP when optional is true and no interface matches."
+                        }
+                      },
+                      "required": [
+                        "provider"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved from os.networkInterfaces()."
+                    }
+                  ]
+                }
+              ]
+            },
+            "port": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 12201
+            },
+            "level": {
+              "type": "string",
+              "enum": [
+                "error",
+                "warn",
+                "info",
+                "http",
+                "verbose",
+                "debug",
+                "silly"
+              ],
+              "default": "info"
+            }
+          },
+          "required": [
+            "host"
+          ],
+          "additionalProperties": false
+        },
+        "input": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "$ref": "#/definitions/AppConfig/properties/logging/properties/host"
+            },
+            "hosts": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AppConfig/properties/logging/properties/host"
+              }
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "$ref": "#/definitions/AppConfig/properties/logging/properties/host"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "protocol": {
+                    "type": "string",
+                    "enum": [
+                      "mqtt",
+                      "mqtts",
+                      "ws",
+                      "wss",
+                      "tcp",
+                      "ssl"
+                    ]
+                  }
+                },
+                "required": [
+                  "host"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "port": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "protocol": {
+              "$ref": "#/definitions/AppConfig/properties/input/properties/servers/items/properties/protocol"
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "$ref": "#/definitions/AppConfig/properties/uns/properties/token"
+            },
+            "clientId": {
+              "type": "string"
+            },
+            "clean": {
+              "type": "boolean"
+            },
+            "keepalive": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "connectTimeout": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reconnectPeriod": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reconnectOnConnackError": {
+              "type": "boolean"
+            },
+            "resubscribe": {
+              "type": "boolean"
+            },
+            "queueQoSZero": {
+              "type": "boolean"
+            },
+            "rejectUnauthorized": {
+              "type": "boolean"
+            },
+            "properties": {
+              "type": "object",
+              "properties": {
+                "sessionExpiryInterval": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "receiveMaximum": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "maximumPacketSize": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "topicAliasMaximum": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "requestResponseInformation": {
+                  "type": "boolean"
+                },
+                "requestProblemInformation": {
+                  "type": "boolean"
+                },
+                "userProperties": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "ca": {
+              "type": "string"
+            },
+            "cert": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            },
+            "servername": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "output": {
+          "$ref": "#/definitions/AppConfig/properties/input"
+        },
+        "infra": {
+          "$ref": "#/definitions/AppConfig/properties/input"
+        },
+        "devops": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": [
+                "azure-devops"
+              ],
+              "default": "azure-devops"
+            },
+            "organization": {
+              "type": "string",
+              "minLength": 1
+            },
+            "project": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "organization"
+          ],
+          "additionalProperties": false
+        },
+        "bridge": {
+          "type": "object",
+          "properties": {
+            "autoStartConnections": {
+              "type": "boolean",
+              "default": false
+            },
+            "api": {
+              "type": "object",
+              "properties": {
+                "instanceName": {
+                  "type": "string",
+                  "minLength": 1,
+                  "default": "bridge-management"
+                }
+              },
+              "additionalProperties": false,
+              "default": {}
+            },
+            "publisher": {
+              "type": "object",
+              "properties": {
+                "instanceName": {
+                  "type": "string",
+                  "minLength": 1,
+                  "default": "bridge-publisher"
+                },
+                "publishThrottlingDelay": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                }
+              },
+              "additionalProperties": false,
+              "default": {}
+            },
+            "retry": {
+              "type": "object",
+              "properties": {
+                "minDelayMs": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "default": 500
+                },
+                "maxDelayMs": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "default": 15000
+                },
+                "maxAttempts": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "default": 1000
+                }
+              },
+              "additionalProperties": false,
+              "default": {}
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        }
+      },
+      "required": [
+        "uns",
+        "infra"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

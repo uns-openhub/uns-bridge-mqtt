@@ -1,9 +1,9 @@
 # UNS Bridge MQTT
 
-UNS DataHub add-on for browsing MQTT brokers, inspecting payloads, and mapping
+UNS OpenHub add-on for browsing MQTT brokers, inspecting payloads, and mapping
 source topics into canonical UNS attributes.
 
-Requires Node.js 22+, pnpm 10, UNS DataHub, and an accessible MQTT broker.
+Requires Node.js 22+, pnpm 10, UNS OpenHub, and an accessible MQTT broker.
 
 ## Scripts
 
@@ -56,7 +56,7 @@ await proxy.publishMqttMessage({
 
 ## Datahub client (last value)
 
-`UnsClient` provides a minimal REST client for the UNS Datahub API, including the batch last-value endpoint. Prefer a long-lived service token if available; you can pass it directly and skip username/password auth.
+`UnsClient` provides a minimal REST client for the UNS OpenHub API, including the batch last-value endpoint. Prefer a long-lived service token if available; you can pass it directly and skip username/password auth.
 
 ```ts
 import { UnsClient } from '@uns-kit/core';

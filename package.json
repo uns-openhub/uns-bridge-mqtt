@@ -7,11 +7,11 @@
   "author": "Aljoša Vister",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uns-datahub/uns-bridge-mqtt.git"
+    "url": "git+https://github.com/uns-openhub/uns-bridge-mqtt.git"
   },
-  "homepage": "https://github.com/uns-datahub/uns-bridge-mqtt#readme",
+  "homepage": "https://github.com/uns-openhub/uns-bridge-mqtt#readme",
   "bugs": {
-    "url": "https://github.com/uns-datahub/uns-bridge-mqtt/issues"
+    "url": "https://github.com/uns-openhub/uns-bridge-mqtt/issues"
   },
   "unsDatahub": {
     "schemaVersion": 1,

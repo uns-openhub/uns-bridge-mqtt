@@ -39,7 +39,9 @@ tmp-rtt
 
 # UNS configuration overrides
 config*.json
-!config-example.json
+!config-development-host.json
+!config-development-podman.json
+!config-production.json
 !config.schema.json
 runtime-config.json
 

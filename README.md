@@ -9,16 +9,27 @@ Requires Node.js 22+, pnpm 10, UNS OpenHub, and an accessible MQTT broker.
 
 ```bash
 pnpm install
-cp config-example.json config.json
-export UNS_PASSWORD='your-controller-password'
+cp config-development-host.json config.json
 pnpm run dev
 pnpm run verify
 ```
 
 ## Configuration
 
-Update `config.json` with UNS endpoints and credentials. The management API
-requires the configured controller JWKS endpoints.
+Choose one tracked startup profile, then copy it to the ignored `config.json`:
+
+| Profile                          | Use it when                                                 | MQTT                    | Controller authentication                                                   |
+| -------------------------------- | ----------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------- |
+| `config-development-host.json`   | Running the bridge directly with `pnpm run dev` on the host | `localhost`             | None; the bridge validates caller JWTs through the controller JWKS endpoint |
+| `config-development-podman.json` | Deploying through a local Podman OpenHub controller         | Compose DNS `mosquitto` | None; the controller supplies the reachable JWKS endpoint                   |
+| `config-production.json`         | Creating a production controller instance                   | Runtime DNS `mosquitto` | None; use the controller's reachable JWKS endpoint                          |
+
+The Podman and production profiles use the internal network name because the
+RTT process runs alongside the controller. The production profile is a safe
+starting point only; supply real external endpoints through the controller's
+deployment configuration. The bridge does not log in with an email/password or
+service token: its management API verifies the operator's JWT using the
+configured controller JWKS endpoints.
 
 Runtime bridge state is loaded from `runtime-config.json` when present. A sample snapshot is provided in `runtime-config.json.example`.
 This runtime snapshot is separate from the original `uns-kit` `config.json` structure (`uns`, `infra`, `input`, `output`, ...).
@@ -387,9 +398,10 @@ Example response body:
 
 ## Releases
 
-The package version is the source of truth. Release tags must match it exactly.
-For example, package version `1.1.1` uses tag `1.1.1`. No package is published
-automatically.
+The package version is the source of truth. A change to `package.json` on
+`main` creates the immutable `v<version>` tag and matching GitHub Release after
+release metadata validation. The release tag then runs the full verification
+suite.
 
 ## License
 

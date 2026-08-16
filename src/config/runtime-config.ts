@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-export const mqttProtocolValues = ["mqtt", "mqtts", "ws", "wss", "tcp", "ssl"] as const;
+export const mqttProtocolValues = ['mqtt', 'mqtts', 'ws', 'wss', 'tcp', 'ssl'] as const;
 export const mqttProtocolSchema = z.enum(mqttProtocolValues);
 
 export const mqttServerSchema = z.object({
@@ -16,7 +16,7 @@ export const mqttPropertiesSchema = z.object({
   topicAliasMaximum: z.number().int().nonnegative().optional(),
   requestResponseInformation: z.boolean().optional(),
   requestProblemInformation: z.boolean().optional(),
-  userProperties: z.record(z.string()).optional(),
+  userProperties: z.record(z.string(), z.string()).optional(),
 });
 
 export const runtimeConnectionConfigSchema = z.object({
@@ -45,11 +45,11 @@ export const runtimeConnectionConfigSchema = z.object({
   subscribeTimeoutMs: z.number().int().positive().optional(),
 });
 
-export const extractionModeValues = ["raw", "text", "json-path"] as const;
+export const extractionModeValues = ['raw', 'text', 'json-path'] as const;
 export const extractionModeSchema = z.enum(extractionModeValues);
 
 export const extractionConfigSchema = z.object({
-  mode: extractionModeSchema.default("text"),
+  mode: extractionModeSchema.default('text'),
   path: z.string().min(1).optional(),
 });
 
@@ -81,7 +81,7 @@ export const runtimeMappingConfigSchema = z.object({
   objectTypeDescription: z.string().min(1).optional(),
   objectId: z.string().min(1),
   dataGroup: z.string().min(1).optional(),
-  validityMode: z.enum(["interval", "lifecycle"]).optional(),
+  validityMode: z.enum(['interval', 'lifecycle']).optional(),
   lifecycleEndValue: z.string().min(1).optional(),
   publishInitialValue: z.boolean().optional(),
   expectedIntervalMs: z.number().int().positive().optional(),

@@ -1,6 +1,6 @@
 {
   "name": "uns-bridge-mqtt",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "private": true,
   "description": "UNS OpenHub add-on for browsing MQTT brokers and mapping payloads into UNS.",
   "license": "MIT",
@@ -16,7 +16,7 @@
   "unsDatahub": {
     "schemaVersion": 1,
     "kind": "addon",
-    "controllerCompatibility": ">=7.1 <8"
+    "controllerCompatibility": ">=2 <3"
   },
   "type": "module",
   "engines": {
@@ -48,11 +48,11 @@
     "check-release-version": "node scripts/check-release-version.mjs"
   },
   "dependencies": {
-    "@uns-kit/api": "^3.0.5",
-    "@uns-kit/bridge-core": "^2.0.0",
-    "@uns-kit/core": "^3.0.5",
+    "@uns-kit/api": "^3.0.10",
+    "@uns-kit/bridge-core": "^3.0.0",
+    "@uns-kit/core": "^3.0.10",
     "mqtt": "^5.15.2",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",

@@ -16,6 +16,7 @@
               "format": "uri"
             },
             "token": {
+              "description": "Bearer token used for service-to-service access to the UNS instance.",
               "anyOf": [
                 {
                   "type": "string"
@@ -36,18 +37,15 @@
                           "description": "Name of the environment variable to read."
                         },
                         "optional": {
-                          "type": "boolean",
-                          "description": "Allow the variable to be absent without throwing during resolution."
+                          "description": "Allow the variable to be absent without throwing during resolution.",
+                          "type": "boolean"
                         },
                         "default": {
-                          "type": "string",
-                          "description": "Fallback value when optional is true and the variable is missing."
+                          "description": "Fallback value when optional is true and the variable is missing.",
+                          "type": "string"
                         }
                       },
-                      "required": [
-                        "provider",
-                        "key"
-                      ],
+                      "required": ["provider", "key"],
                       "additionalProperties": false,
                       "description": "Secret placeholder resolved from process.env."
                     },
@@ -70,52 +68,116 @@
                           "description": "Secret key/name inside the given path."
                         },
                         "optional": {
-                          "type": "boolean",
-                          "description": "Allow the secret to be absent without throwing during resolution."
+                          "description": "Allow the secret to be absent without throwing during resolution.",
+                          "type": "boolean"
                         },
                         "environment": {
-                          "type": "string",
-                          "description": "Infisical environment override (defaults to current mode if omitted)."
+                          "description": "Infisical environment override (defaults to current mode if omitted).",
+                          "type": "string"
                         },
                         "projectId": {
-                          "type": "string",
-                          "description": "Optional Infisical project identifier when not using the default."
+                          "description": "Optional Infisical project identifier when not using the default.",
+                          "type": "string"
                         },
                         "default": {
-                          "type": "string",
-                          "description": "Fallback value when the secret is missing and optional resolution is allowed."
+                          "description": "Fallback value when the secret is missing and optional resolution is allowed.",
+                          "type": "string"
                         }
                       },
-                      "required": [
-                        "provider",
-                        "path",
-                        "key"
-                      ],
+                      "required": ["provider", "path", "key"],
                       "additionalProperties": false,
                       "description": "Secret placeholder resolved from Infisical."
                     }
                   ]
                 }
-              ],
-              "description": "Bearer token used for service-to-service access to the UNS instance."
+              ]
             },
             "email": {
+              "description": "Email used when authenticating to graphql endpoint of the UNS instance.",
               "type": "string",
-              "format": "email",
-              "description": "Email used when authenticating to graphql endpoint of the UNS instance."
+              "format": "email"
             },
             "password": {
-              "$ref": "#/definitions/AppConfig/properties/uns/properties/token",
-              "description": "Password or secret value paired with the UNS email."
+              "description": "Password or secret value paired with the UNS email.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "env",
+                          "description": "Load the secret from an environment variable."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Name of the environment variable to read."
+                        },
+                        "optional": {
+                          "description": "Allow the variable to be absent without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback value when optional is true and the variable is missing.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "key"],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from process.env."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "infisical",
+                          "description": "Load the secret from Infisical."
+                        },
+                        "path": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret folder path in Infisical, e.g. '/app/database'."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret key/name inside the given path."
+                        },
+                        "optional": {
+                          "description": "Allow the secret to be absent without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "environment": {
+                          "description": "Infisical environment override (defaults to current mode if omitted).",
+                          "type": "string"
+                        },
+                        "projectId": {
+                          "description": "Optional Infisical project identifier when not using the default.",
+                          "type": "string"
+                        },
+                        "default": {
+                          "description": "Fallback value when the secret is missing and optional resolution is allowed.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "path", "key"],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from Infisical."
+                    }
+                  ]
+                }
+              ]
             },
             "instanceMode": {
+              "default": "wait",
               "type": "string",
-              "enum": [
-                "wait",
-                "force",
-                "handover"
-              ],
-              "default": "wait"
+              "enum": ["wait", "force", "handover"]
             },
             "processName": {
               "type": "string",
@@ -123,43 +185,43 @@
               "description": "Process name used in MQTT topics and logs."
             },
             "handover": {
-              "type": "boolean",
-              "default": true
+              "default": true,
+              "type": "boolean"
             },
             "supervisor": {
               "type": "object",
               "properties": {
                 "enabled": {
-                  "type": "boolean",
                   "default": false,
-                  "description": "Enable controller/PM2 supervisor handling for this RTT instance."
+                  "description": "Enable controller/PM2 supervisor handling for this RTT instance.",
+                  "type": "boolean"
                 },
                 "restartOnExit": {
-                  "type": "boolean",
                   "default": false,
-                  "description": "Let PM2 restart the process when it exits unexpectedly."
+                  "description": "Let PM2 restart the process when it exits unexpectedly.",
+                  "type": "boolean"
                 },
                 "maxMemoryMb": {
+                  "description": "Optional PM2 memory restart limit in megabytes.",
                   "type": "integer",
-                  "exclusiveMinimum": 0,
-                  "description": "Optional PM2 memory restart limit in megabytes."
+                  "exclusiveMinimum": 0
                 },
                 "restartOnUnhealthy": {
-                  "type": "boolean",
                   "default": false,
-                  "description": "Let the controller auto-start this instance when required system-service runtime signals are absent."
+                  "description": "Let the controller auto-start this instance when required system-service runtime signals are absent.",
+                  "type": "boolean"
                 },
                 "unhealthyAfterMs": {
-                  "type": "integer",
-                  "exclusiveMinimum": 0,
                   "default": 60000,
-                  "description": "How long runtime signals must stay unhealthy before the controller supervisor can act."
+                  "description": "How long runtime signals must stay unhealthy before the controller supervisor can act.",
+                  "type": "integer",
+                  "exclusiveMinimum": 0
                 },
                 "restartCooldownMs": {
-                  "type": "integer",
-                  "exclusiveMinimum": 0,
                   "default": 300000,
-                  "description": "Minimum time between controller supervisor restart attempts for this instance."
+                  "description": "Minimum time between controller supervisor restart attempts for this instance.",
+                  "type": "integer",
+                  "exclusiveMinimum": 0
                 }
               },
               "additionalProperties": false,
@@ -174,30 +236,21 @@
               "format": "uri"
             },
             "env": {
+              "default": "dev",
               "type": "string",
-              "enum": [
-                "dev",
-                "staging",
-                "test",
-                "prod"
-              ],
-              "default": "dev"
+              "enum": ["dev", "staging", "test", "prod"]
             }
           },
-          "required": [
-            "graphql",
-            "rest",
-            "processName"
-          ],
+          "required": ["graphql", "rest", "processName"],
           "additionalProperties": false
         },
         "logging": {
           "type": "object",
           "properties": {
             "adapter": {
+              "default": "udp",
               "type": "string",
-              "minLength": 1,
-              "default": "udp"
+              "minLength": 1
             },
             "host": {
               "anyOf": [
@@ -222,10 +275,7 @@
                           "description": "Host or IP address that should be used directly."
                         }
                       },
-                      "required": [
-                        "provider",
-                        "value"
-                      ],
+                      "required": ["provider", "value"],
                       "additionalProperties": false,
                       "description": "Host placeholder resolved from an in-line value."
                     },
@@ -243,18 +293,15 @@
                           "description": "Identifier used when resolving the host from HostResolverOptions."
                         },
                         "optional": {
-                          "type": "boolean",
-                          "description": "Allow the external host to be missing without throwing during resolution."
+                          "description": "Allow the external host to be missing without throwing during resolution.",
+                          "type": "boolean"
                         },
                         "default": {
-                          "type": "string",
-                          "description": "Fallback host when optional is true and the external entry is missing."
+                          "description": "Fallback host when optional is true and the external entry is missing.",
+                          "type": "string"
                         }
                       },
-                      "required": [
-                        "provider",
-                        "key"
-                      ],
+                      "required": ["provider", "key"],
                       "additionalProperties": false,
                       "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
                     },
@@ -267,30 +314,25 @@
                           "description": "Resolve the host from local network interfaces."
                         },
                         "family": {
-                          "type": "string",
-                          "enum": [
-                            "IPv4",
-                            "IPv6"
-                          ],
                           "default": "IPv4",
-                          "description": "Address family to return when scanning interfaces."
+                          "description": "Address family to return when scanning interfaces.",
+                          "type": "string",
+                          "enum": ["IPv4", "IPv6"]
                         },
                         "interfaceName": {
-                          "type": "string",
-                          "description": "Specific interface to read (falls back to the first match when omitted)."
+                          "description": "Specific interface to read (falls back to the first match when omitted).",
+                          "type": "string"
                         },
                         "optional": {
-                          "type": "boolean",
-                          "description": "Allow the interface lookup to fail without throwing during resolution."
+                          "description": "Allow the interface lookup to fail without throwing during resolution.",
+                          "type": "boolean"
                         },
                         "default": {
-                          "type": "string",
-                          "description": "Fallback host/IP when optional is true and no interface matches."
+                          "description": "Fallback host/IP when optional is true and no interface matches.",
+                          "type": "string"
                         }
                       },
-                      "required": [
-                        "provider"
-                      ],
+                      "required": ["provider"],
                       "additionalProperties": false,
                       "description": "Host placeholder resolved from os.networkInterfaces()."
                     }
@@ -299,39 +341,199 @@
               ]
             },
             "port": {
+              "default": 12201,
               "type": "integer",
-              "exclusiveMinimum": 0,
-              "default": 12201
+              "exclusiveMinimum": 0
             },
             "level": {
+              "default": "info",
               "type": "string",
-              "enum": [
-                "error",
-                "warn",
-                "info",
-                "http",
-                "verbose",
-                "debug",
-                "silly"
-              ],
-              "default": "info"
+              "enum": ["error", "warn", "info", "http", "verbose", "debug", "silly"]
             }
           },
-          "required": [
-            "host"
-          ],
+          "required": ["host"],
           "additionalProperties": false
         },
         "input": {
           "type": "object",
           "properties": {
             "host": {
-              "$ref": "#/definitions/AppConfig/properties/logging/properties/host"
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Host or IP address used directly without placeholder."
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "inline",
+                          "description": "Use the supplied host or IP address."
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Host or IP address that should be used directly."
+                        }
+                      },
+                      "required": ["provider", "value"],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved from an in-line value."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "external",
+                          "description": "Resolve the host from an external mapping."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Identifier used when resolving the host from HostResolverOptions."
+                        },
+                        "optional": {
+                          "description": "Allow the external host to be missing without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback host when optional is true and the external entry is missing.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "key"],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "system",
+                          "description": "Resolve the host from local network interfaces."
+                        },
+                        "family": {
+                          "default": "IPv4",
+                          "description": "Address family to return when scanning interfaces.",
+                          "type": "string",
+                          "enum": ["IPv4", "IPv6"]
+                        },
+                        "interfaceName": {
+                          "description": "Specific interface to read (falls back to the first match when omitted).",
+                          "type": "string"
+                        },
+                        "optional": {
+                          "description": "Allow the interface lookup to fail without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback host/IP when optional is true and no interface matches.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider"],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved from os.networkInterfaces()."
+                    }
+                  ]
+                }
+              ]
             },
             "hosts": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/AppConfig/properties/logging/properties/host"
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Host or IP address used directly without placeholder."
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "const": "inline",
+                            "description": "Use the supplied host or IP address."
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Host or IP address that should be used directly."
+                          }
+                        },
+                        "required": ["provider", "value"],
+                        "additionalProperties": false,
+                        "description": "Host placeholder resolved from an in-line value."
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "const": "external",
+                            "description": "Resolve the host from an external mapping."
+                          },
+                          "key": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Identifier used when resolving the host from HostResolverOptions."
+                          },
+                          "optional": {
+                            "description": "Allow the external host to be missing without throwing during resolution.",
+                            "type": "boolean"
+                          },
+                          "default": {
+                            "description": "Fallback host when optional is true and the external entry is missing.",
+                            "type": "string"
+                          }
+                        },
+                        "required": ["provider", "key"],
+                        "additionalProperties": false,
+                        "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "const": "system",
+                            "description": "Resolve the host from local network interfaces."
+                          },
+                          "family": {
+                            "default": "IPv4",
+                            "description": "Address family to return when scanning interfaces.",
+                            "type": "string",
+                            "enum": ["IPv4", "IPv6"]
+                          },
+                          "interfaceName": {
+                            "description": "Specific interface to read (falls back to the first match when omitted).",
+                            "type": "string"
+                          },
+                          "optional": {
+                            "description": "Allow the interface lookup to fail without throwing during resolution.",
+                            "type": "boolean"
+                          },
+                          "default": {
+                            "description": "Fallback host/IP when optional is true and no interface matches.",
+                            "type": "string"
+                          }
+                        },
+                        "required": ["provider"],
+                        "additionalProperties": false,
+                        "description": "Host placeholder resolved from os.networkInterfaces()."
+                      }
+                    ]
+                  }
+                ]
               }
             },
             "servers": {
@@ -340,7 +542,92 @@
                 "type": "object",
                 "properties": {
                   "host": {
-                    "$ref": "#/definitions/AppConfig/properties/logging/properties/host"
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Host or IP address used directly without placeholder."
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "const": "inline",
+                                "description": "Use the supplied host or IP address."
+                              },
+                              "value": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Host or IP address that should be used directly."
+                              }
+                            },
+                            "required": ["provider", "value"],
+                            "additionalProperties": false,
+                            "description": "Host placeholder resolved from an in-line value."
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "const": "external",
+                                "description": "Resolve the host from an external mapping."
+                              },
+                              "key": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Identifier used when resolving the host from HostResolverOptions."
+                              },
+                              "optional": {
+                                "description": "Allow the external host to be missing without throwing during resolution.",
+                                "type": "boolean"
+                              },
+                              "default": {
+                                "description": "Fallback host when optional is true and the external entry is missing.",
+                                "type": "string"
+                              }
+                            },
+                            "required": ["provider", "key"],
+                            "additionalProperties": false,
+                            "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "const": "system",
+                                "description": "Resolve the host from local network interfaces."
+                              },
+                              "family": {
+                                "default": "IPv4",
+                                "description": "Address family to return when scanning interfaces.",
+                                "type": "string",
+                                "enum": ["IPv4", "IPv6"]
+                              },
+                              "interfaceName": {
+                                "description": "Specific interface to read (falls back to the first match when omitted).",
+                                "type": "string"
+                              },
+                              "optional": {
+                                "description": "Allow the interface lookup to fail without throwing during resolution.",
+                                "type": "boolean"
+                              },
+                              "default": {
+                                "description": "Fallback host/IP when optional is true and no interface matches.",
+                                "type": "string"
+                              }
+                            },
+                            "required": ["provider"],
+                            "additionalProperties": false,
+                            "description": "Host placeholder resolved from os.networkInterfaces()."
+                          }
+                        ]
+                      }
+                    ]
                   },
                   "port": {
                     "type": "integer",
@@ -348,19 +635,10 @@
                   },
                   "protocol": {
                     "type": "string",
-                    "enum": [
-                      "mqtt",
-                      "mqtts",
-                      "ws",
-                      "wss",
-                      "tcp",
-                      "ssl"
-                    ]
+                    "enum": ["mqtt", "mqtts", "ws", "wss", "tcp", "ssl"]
                   }
                 },
-                "required": [
-                  "host"
-                ],
+                "required": ["host"],
                 "additionalProperties": false
               }
             },
@@ -369,13 +647,87 @@
               "exclusiveMinimum": 0
             },
             "protocol": {
-              "$ref": "#/definitions/AppConfig/properties/input/properties/servers/items/properties/protocol"
+              "type": "string",
+              "enum": ["mqtt", "mqtts", "ws", "wss", "tcp", "ssl"]
             },
             "username": {
               "type": "string"
             },
             "password": {
-              "$ref": "#/definitions/AppConfig/properties/uns/properties/token"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "env",
+                          "description": "Load the secret from an environment variable."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Name of the environment variable to read."
+                        },
+                        "optional": {
+                          "description": "Allow the variable to be absent without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback value when optional is true and the variable is missing.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "key"],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from process.env."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "infisical",
+                          "description": "Load the secret from Infisical."
+                        },
+                        "path": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret folder path in Infisical, e.g. '/app/database'."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret key/name inside the given path."
+                        },
+                        "optional": {
+                          "description": "Allow the secret to be absent without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "environment": {
+                          "description": "Infisical environment override (defaults to current mode if omitted).",
+                          "type": "string"
+                        },
+                        "projectId": {
+                          "description": "Optional Infisical project identifier when not using the default.",
+                          "type": "string"
+                        },
+                        "default": {
+                          "description": "Fallback value when the secret is missing and optional resolution is allowed.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "path", "key"],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from Infisical."
+                    }
+                  ]
+                }
+              ]
             },
             "clientId": {
               "type": "string"
@@ -434,6 +786,9 @@
                 },
                 "userProperties": {
                   "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
                   "additionalProperties": {
                     "type": "string"
                   }
@@ -457,20 +812,926 @@
           "additionalProperties": false
         },
         "output": {
-          "$ref": "#/definitions/AppConfig/properties/input"
+          "type": "object",
+          "properties": {
+            "host": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Host or IP address used directly without placeholder."
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "inline",
+                          "description": "Use the supplied host or IP address."
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Host or IP address that should be used directly."
+                        }
+                      },
+                      "required": ["provider", "value"],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved from an in-line value."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "external",
+                          "description": "Resolve the host from an external mapping."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Identifier used when resolving the host from HostResolverOptions."
+                        },
+                        "optional": {
+                          "description": "Allow the external host to be missing without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback host when optional is true and the external entry is missing.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "key"],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "system",
+                          "description": "Resolve the host from local network interfaces."
+                        },
+                        "family": {
+                          "default": "IPv4",
+                          "description": "Address family to return when scanning interfaces.",
+                          "type": "string",
+                          "enum": ["IPv4", "IPv6"]
+                        },
+                        "interfaceName": {
+                          "description": "Specific interface to read (falls back to the first match when omitted).",
+                          "type": "string"
+                        },
+                        "optional": {
+                          "description": "Allow the interface lookup to fail without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback host/IP when optional is true and no interface matches.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider"],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved from os.networkInterfaces()."
+                    }
+                  ]
+                }
+              ]
+            },
+            "hosts": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Host or IP address used directly without placeholder."
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "const": "inline",
+                            "description": "Use the supplied host or IP address."
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Host or IP address that should be used directly."
+                          }
+                        },
+                        "required": ["provider", "value"],
+                        "additionalProperties": false,
+                        "description": "Host placeholder resolved from an in-line value."
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "const": "external",
+                            "description": "Resolve the host from an external mapping."
+                          },
+                          "key": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Identifier used when resolving the host from HostResolverOptions."
+                          },
+                          "optional": {
+                            "description": "Allow the external host to be missing without throwing during resolution.",
+                            "type": "boolean"
+                          },
+                          "default": {
+                            "description": "Fallback host when optional is true and the external entry is missing.",
+                            "type": "string"
+                          }
+                        },
+                        "required": ["provider", "key"],
+                        "additionalProperties": false,
+                        "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "const": "system",
+                            "description": "Resolve the host from local network interfaces."
+                          },
+                          "family": {
+                            "default": "IPv4",
+                            "description": "Address family to return when scanning interfaces.",
+                            "type": "string",
+                            "enum": ["IPv4", "IPv6"]
+                          },
+                          "interfaceName": {
+                            "description": "Specific interface to read (falls back to the first match when omitted).",
+                            "type": "string"
+                          },
+                          "optional": {
+                            "description": "Allow the interface lookup to fail without throwing during resolution.",
+                            "type": "boolean"
+                          },
+                          "default": {
+                            "description": "Fallback host/IP when optional is true and no interface matches.",
+                            "type": "string"
+                          }
+                        },
+                        "required": ["provider"],
+                        "additionalProperties": false,
+                        "description": "Host placeholder resolved from os.networkInterfaces()."
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Host or IP address used directly without placeholder."
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "const": "inline",
+                                "description": "Use the supplied host or IP address."
+                              },
+                              "value": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Host or IP address that should be used directly."
+                              }
+                            },
+                            "required": ["provider", "value"],
+                            "additionalProperties": false,
+                            "description": "Host placeholder resolved from an in-line value."
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "const": "external",
+                                "description": "Resolve the host from an external mapping."
+                              },
+                              "key": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Identifier used when resolving the host from HostResolverOptions."
+                              },
+                              "optional": {
+                                "description": "Allow the external host to be missing without throwing during resolution.",
+                                "type": "boolean"
+                              },
+                              "default": {
+                                "description": "Fallback host when optional is true and the external entry is missing.",
+                                "type": "string"
+                              }
+                            },
+                            "required": ["provider", "key"],
+                            "additionalProperties": false,
+                            "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "const": "system",
+                                "description": "Resolve the host from local network interfaces."
+                              },
+                              "family": {
+                                "default": "IPv4",
+                                "description": "Address family to return when scanning interfaces.",
+                                "type": "string",
+                                "enum": ["IPv4", "IPv6"]
+                              },
+                              "interfaceName": {
+                                "description": "Specific interface to read (falls back to the first match when omitted).",
+                                "type": "string"
+                              },
+                              "optional": {
+                                "description": "Allow the interface lookup to fail without throwing during resolution.",
+                                "type": "boolean"
+                              },
+                              "default": {
+                                "description": "Fallback host/IP when optional is true and no interface matches.",
+                                "type": "string"
+                              }
+                            },
+                            "required": ["provider"],
+                            "additionalProperties": false,
+                            "description": "Host placeholder resolved from os.networkInterfaces()."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "port": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "protocol": {
+                    "type": "string",
+                    "enum": ["mqtt", "mqtts", "ws", "wss", "tcp", "ssl"]
+                  }
+                },
+                "required": ["host"],
+                "additionalProperties": false
+              }
+            },
+            "port": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "protocol": {
+              "type": "string",
+              "enum": ["mqtt", "mqtts", "ws", "wss", "tcp", "ssl"]
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "env",
+                          "description": "Load the secret from an environment variable."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Name of the environment variable to read."
+                        },
+                        "optional": {
+                          "description": "Allow the variable to be absent without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback value when optional is true and the variable is missing.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "key"],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from process.env."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "infisical",
+                          "description": "Load the secret from Infisical."
+                        },
+                        "path": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret folder path in Infisical, e.g. '/app/database'."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret key/name inside the given path."
+                        },
+                        "optional": {
+                          "description": "Allow the secret to be absent without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "environment": {
+                          "description": "Infisical environment override (defaults to current mode if omitted).",
+                          "type": "string"
+                        },
+                        "projectId": {
+                          "description": "Optional Infisical project identifier when not using the default.",
+                          "type": "string"
+                        },
+                        "default": {
+                          "description": "Fallback value when the secret is missing and optional resolution is allowed.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "path", "key"],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from Infisical."
+                    }
+                  ]
+                }
+              ]
+            },
+            "clientId": {
+              "type": "string"
+            },
+            "clean": {
+              "type": "boolean"
+            },
+            "keepalive": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "connectTimeout": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reconnectPeriod": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reconnectOnConnackError": {
+              "type": "boolean"
+            },
+            "resubscribe": {
+              "type": "boolean"
+            },
+            "queueQoSZero": {
+              "type": "boolean"
+            },
+            "rejectUnauthorized": {
+              "type": "boolean"
+            },
+            "properties": {
+              "type": "object",
+              "properties": {
+                "sessionExpiryInterval": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "receiveMaximum": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "maximumPacketSize": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "topicAliasMaximum": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "requestResponseInformation": {
+                  "type": "boolean"
+                },
+                "requestProblemInformation": {
+                  "type": "boolean"
+                },
+                "userProperties": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "ca": {
+              "type": "string"
+            },
+            "cert": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            },
+            "servername": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         },
         "infra": {
-          "$ref": "#/definitions/AppConfig/properties/input"
+          "type": "object",
+          "properties": {
+            "host": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Host or IP address used directly without placeholder."
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "inline",
+                          "description": "Use the supplied host or IP address."
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Host or IP address that should be used directly."
+                        }
+                      },
+                      "required": ["provider", "value"],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved from an in-line value."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "external",
+                          "description": "Resolve the host from an external mapping."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Identifier used when resolving the host from HostResolverOptions."
+                        },
+                        "optional": {
+                          "description": "Allow the external host to be missing without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback host when optional is true and the external entry is missing.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "key"],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "system",
+                          "description": "Resolve the host from local network interfaces."
+                        },
+                        "family": {
+                          "default": "IPv4",
+                          "description": "Address family to return when scanning interfaces.",
+                          "type": "string",
+                          "enum": ["IPv4", "IPv6"]
+                        },
+                        "interfaceName": {
+                          "description": "Specific interface to read (falls back to the first match when omitted).",
+                          "type": "string"
+                        },
+                        "optional": {
+                          "description": "Allow the interface lookup to fail without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback host/IP when optional is true and no interface matches.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider"],
+                      "additionalProperties": false,
+                      "description": "Host placeholder resolved from os.networkInterfaces()."
+                    }
+                  ]
+                }
+              ]
+            },
+            "hosts": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Host or IP address used directly without placeholder."
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "const": "inline",
+                            "description": "Use the supplied host or IP address."
+                          },
+                          "value": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Host or IP address that should be used directly."
+                          }
+                        },
+                        "required": ["provider", "value"],
+                        "additionalProperties": false,
+                        "description": "Host placeholder resolved from an in-line value."
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "const": "external",
+                            "description": "Resolve the host from an external mapping."
+                          },
+                          "key": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Identifier used when resolving the host from HostResolverOptions."
+                          },
+                          "optional": {
+                            "description": "Allow the external host to be missing without throwing during resolution.",
+                            "type": "boolean"
+                          },
+                          "default": {
+                            "description": "Fallback host when optional is true and the external entry is missing.",
+                            "type": "string"
+                          }
+                        },
+                        "required": ["provider", "key"],
+                        "additionalProperties": false,
+                        "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "const": "system",
+                            "description": "Resolve the host from local network interfaces."
+                          },
+                          "family": {
+                            "default": "IPv4",
+                            "description": "Address family to return when scanning interfaces.",
+                            "type": "string",
+                            "enum": ["IPv4", "IPv6"]
+                          },
+                          "interfaceName": {
+                            "description": "Specific interface to read (falls back to the first match when omitted).",
+                            "type": "string"
+                          },
+                          "optional": {
+                            "description": "Allow the interface lookup to fail without throwing during resolution.",
+                            "type": "boolean"
+                          },
+                          "default": {
+                            "description": "Fallback host/IP when optional is true and no interface matches.",
+                            "type": "string"
+                          }
+                        },
+                        "required": ["provider"],
+                        "additionalProperties": false,
+                        "description": "Host placeholder resolved from os.networkInterfaces()."
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "servers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Host or IP address used directly without placeholder."
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "const": "inline",
+                                "description": "Use the supplied host or IP address."
+                              },
+                              "value": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Host or IP address that should be used directly."
+                              }
+                            },
+                            "required": ["provider", "value"],
+                            "additionalProperties": false,
+                            "description": "Host placeholder resolved from an in-line value."
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "const": "external",
+                                "description": "Resolve the host from an external mapping."
+                              },
+                              "key": {
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Identifier used when resolving the host from HostResolverOptions."
+                              },
+                              "optional": {
+                                "description": "Allow the external host to be missing without throwing during resolution.",
+                                "type": "boolean"
+                              },
+                              "default": {
+                                "description": "Fallback host when optional is true and the external entry is missing.",
+                                "type": "string"
+                              }
+                            },
+                            "required": ["provider", "key"],
+                            "additionalProperties": false,
+                            "description": "Host placeholder resolved via HostResolverOptions.externalHosts or resolveExternal function."
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "const": "system",
+                                "description": "Resolve the host from local network interfaces."
+                              },
+                              "family": {
+                                "default": "IPv4",
+                                "description": "Address family to return when scanning interfaces.",
+                                "type": "string",
+                                "enum": ["IPv4", "IPv6"]
+                              },
+                              "interfaceName": {
+                                "description": "Specific interface to read (falls back to the first match when omitted).",
+                                "type": "string"
+                              },
+                              "optional": {
+                                "description": "Allow the interface lookup to fail without throwing during resolution.",
+                                "type": "boolean"
+                              },
+                              "default": {
+                                "description": "Fallback host/IP when optional is true and no interface matches.",
+                                "type": "string"
+                              }
+                            },
+                            "required": ["provider"],
+                            "additionalProperties": false,
+                            "description": "Host placeholder resolved from os.networkInterfaces()."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "port": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "protocol": {
+                    "type": "string",
+                    "enum": ["mqtt", "mqtts", "ws", "wss", "tcp", "ssl"]
+                  }
+                },
+                "required": ["host"],
+                "additionalProperties": false
+              }
+            },
+            "port": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "protocol": {
+              "type": "string",
+              "enum": ["mqtt", "mqtts", "ws", "wss", "tcp", "ssl"]
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "env",
+                          "description": "Load the secret from an environment variable."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Name of the environment variable to read."
+                        },
+                        "optional": {
+                          "description": "Allow the variable to be absent without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "default": {
+                          "description": "Fallback value when optional is true and the variable is missing.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "key"],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from process.env."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "provider": {
+                          "type": "string",
+                          "const": "infisical",
+                          "description": "Load the secret from Infisical."
+                        },
+                        "path": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret folder path in Infisical, e.g. '/app/database'."
+                        },
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "description": "Secret key/name inside the given path."
+                        },
+                        "optional": {
+                          "description": "Allow the secret to be absent without throwing during resolution.",
+                          "type": "boolean"
+                        },
+                        "environment": {
+                          "description": "Infisical environment override (defaults to current mode if omitted).",
+                          "type": "string"
+                        },
+                        "projectId": {
+                          "description": "Optional Infisical project identifier when not using the default.",
+                          "type": "string"
+                        },
+                        "default": {
+                          "description": "Fallback value when the secret is missing and optional resolution is allowed.",
+                          "type": "string"
+                        }
+                      },
+                      "required": ["provider", "path", "key"],
+                      "additionalProperties": false,
+                      "description": "Secret placeholder resolved from Infisical."
+                    }
+                  ]
+                }
+              ]
+            },
+            "clientId": {
+              "type": "string"
+            },
+            "clean": {
+              "type": "boolean"
+            },
+            "keepalive": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "connectTimeout": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reconnectPeriod": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reconnectOnConnackError": {
+              "type": "boolean"
+            },
+            "resubscribe": {
+              "type": "boolean"
+            },
+            "queueQoSZero": {
+              "type": "boolean"
+            },
+            "rejectUnauthorized": {
+              "type": "boolean"
+            },
+            "properties": {
+              "type": "object",
+              "properties": {
+                "sessionExpiryInterval": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "receiveMaximum": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "maximumPacketSize": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "topicAliasMaximum": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "requestResponseInformation": {
+                  "type": "boolean"
+                },
+                "requestProblemInformation": {
+                  "type": "boolean"
+                },
+                "userProperties": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "ca": {
+              "type": "string"
+            },
+            "cert": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string"
+            },
+            "servername": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         },
         "devops": {
           "type": "object",
           "properties": {
             "provider": {
+              "default": "azure-devops",
               "type": "string",
-              "enum": [
-                "azure-devops"
-              ],
-              "default": "azure-devops"
+              "enum": ["azure-devops"]
             },
             "organization": {
               "type": "string",
@@ -481,78 +1742,73 @@
               "minLength": 1
             }
           },
-          "required": [
-            "organization"
-          ],
+          "required": ["organization"],
           "additionalProperties": false
         },
         "bridge": {
+          "default": {},
           "type": "object",
           "properties": {
             "autoStartConnections": {
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "type": "boolean"
             },
             "api": {
+              "default": {},
               "type": "object",
               "properties": {
                 "instanceName": {
+                  "default": "bridge-management",
                   "type": "string",
-                  "minLength": 1,
-                  "default": "bridge-management"
+                  "minLength": 1
                 }
-              },
-              "additionalProperties": false,
-              "default": {}
+              }
             },
             "publisher": {
+              "default": {},
               "type": "object",
               "properties": {
                 "instanceName": {
+                  "default": "bridge-publisher",
                   "type": "string",
-                  "minLength": 1,
-                  "default": "bridge-publisher"
+                  "minLength": 1
                 },
                 "publishThrottlingDelay": {
+                  "default": 0,
                   "type": "integer",
                   "minimum": 0,
-                  "default": 0
+                  "maximum": 9007199254740991
                 }
-              },
-              "additionalProperties": false,
-              "default": {}
+              }
             },
             "retry": {
+              "default": {},
               "type": "object",
               "properties": {
                 "minDelayMs": {
+                  "default": 500,
                   "type": "integer",
                   "exclusiveMinimum": 0,
-                  "default": 500
+                  "maximum": 9007199254740991
                 },
                 "maxDelayMs": {
+                  "default": 15000,
                   "type": "integer",
                   "exclusiveMinimum": 0,
-                  "default": 15000
+                  "maximum": 9007199254740991
                 },
                 "maxAttempts": {
+                  "default": 1000,
                   "type": "integer",
                   "exclusiveMinimum": 0,
-                  "default": 1000
+                  "maximum": 9007199254740991
                 }
-              },
-              "additionalProperties": false,
-              "default": {}
+              }
             }
-          },
-          "additionalProperties": false,
-          "default": {}
+          }
         }
       },
-      "required": [
-        "uns",
-        "infra"
-      ],
+      "required": ["uns", "infra"],
       "additionalProperties": false
     }
   },

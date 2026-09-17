@@ -52,7 +52,7 @@
     "@uns-kit/bridge-core": "^3.0.0",
     "@uns-kit/core": "^3.0.10",
     "mqtt": "^5.15.2",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",

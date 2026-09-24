@@ -51,7 +51,7 @@
     "@uns-kit/api": "^3.0.10",
     "@uns-kit/bridge-core": "^3.0.0",
     "@uns-kit/core": "^3.0.10",
-    "mqtt": "^5.15.2",
+    "mqtt": "^5.16.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

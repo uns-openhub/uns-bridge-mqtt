@@ -1,10 +1,10 @@
 {
   "name": "uns-bridge-mqtt",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "description": "UNS OpenHub add-on for browsing MQTT brokers and mapping payloads into UNS.",
   "license": "MIT",
-  "author": "Aljoša Vister",
+  "author": "Aljo\u0161a Vister",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/uns-openhub/uns-bridge-mqtt.git"
@@ -23,7 +23,9 @@
     "node": ">=22"
   },
   "files": [
-    "dist"
+    "dist",
+    "runtime-state.manifest.json",
+    "runtime-config.schema.json"
   ],
   "exports": {
     ".": {
@@ -34,8 +36,8 @@
   "scripts": {
     "clean": "rimraf dist tsconfig.tsbuildinfo",
     "typecheck": "tsc --noEmit",
-    "build": "pnpm run clean && tsc -p tsconfig.json",
-    "dev": "tsx watch src/index.ts",
+    "build": "pnpm run clean && tsc -p tsconfig.json && node scripts/generate-runtime-state-schema.mjs",
+    "dev": "node --env-file-if-exists=.env ./node_modules/tsx/dist/cli.mjs watch src/index.ts",
     "start": "node --env-file-if-exists=.env dist/index.js",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
@@ -44,13 +46,14 @@
     "generate-config-schema": "node ./node_modules/@uns-kit/core/dist/tools/generate-config-schema.js",
     "generate-codegen": "graphql-code-generator --require dotenv/config --config codegen.ts",
     "sync-uns-schema": "node ./node_modules/@uns-kit/core/dist/tools/sync-uns-schema.js",
-    "verify": "pnpm run typecheck && pnpm run lint && pnpm run build",
-    "check-release-version": "node scripts/check-release-version.mjs"
+    "verify": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
+    "check-release-version": "node scripts/check-release-version.mjs",
+    "test": "tsx --test src/runtime/*.test.ts"
   },
   "dependencies": {
-    "@uns-kit/api": "^3.0.10",
-    "@uns-kit/bridge-core": "^3.0.0",
-    "@uns-kit/core": "^3.0.10",
+    "@uns-kit/api": "^3.0.21",
+    "@uns-kit/bridge-core": "^3.0.1",
+    "@uns-kit/core": "^3.0.21",
     "mqtt": "^5.15.2",
     "zod": "^4.4.3"
   },

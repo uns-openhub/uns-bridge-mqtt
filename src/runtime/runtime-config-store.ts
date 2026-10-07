@@ -1,4 +1,5 @@
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile, rename, unlink } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { runtimeConfigSnapshotSchema, type RuntimeConfigSnapshot } from "../config/runtime-config.js";
 
@@ -30,6 +31,12 @@ export class RuntimeConfigStore {
   async write(snapshot: RuntimeConfigSnapshot): Promise<void> {
     const directory = path.dirname(this.resolvedPath);
     await mkdir(directory, { recursive: true });
-    await writeFile(this.resolvedPath, JSON.stringify(snapshot, null, 2), "utf8");
+    const temporary = this.resolvedPath + "." + randomUUID() + ".tmp";
+    try {
+      await writeFile(temporary, JSON.stringify(snapshot, null, 2), {encoding:"utf8",mode:0o600,flag:"wx"});
+      await rename(temporary, this.resolvedPath);
+    } finally {
+      await unlink(temporary).catch(() => undefined);
+    }
   }
 }

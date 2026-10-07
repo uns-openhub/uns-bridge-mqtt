@@ -41,6 +41,53 @@ parent asset path and `asset` to the leaf sub-asset. For example, a mapping with
 under `enterprise/site/area/line/line-1/drive-1/...`; `dataGroup` remains
 storage/routing metadata.
 
+## Runtime credentials and controller Infisical bindings
+
+Runtime connection `username` and `password` accept strict local references:
+
+```json
+{
+  "username": { "provider": "env", "key": "UNS_RUNTIME_SECRET_MQTT_USER" },
+  "password": { "provider": "env", "key": "UNS_RUNTIME_SECRET_MQTT_PASSWORD" }
+}
+```
+
+The bridge resolves these names from its environment only when connecting or
+browsing. A stopped connection can be saved before provisioning. Missing values
+block start; a full configuration apply preflights all started connections before
+changing the existing registry. Error messages redact credentials.
+
+For managed RTT instances, the controller provisions the requested variables
+from its local environment or its existing UNS Kit Infisical resolver. Configure
+`runtimeSecretBindings` in the controller-owned instance startup metadata:
+
+```json
+{
+  "runtimeSecretBindings": {
+    "UNS_RUNTIME_SECRET_MQTT_USER": {
+      "provider": "infisical", "path": "/factory/mqtt", "key": "MQTT_USER"
+    },
+    "UNS_RUNTIME_SECRET_MQTT_PASSWORD": {
+      "provider": "infisical", "path": "/factory/mqtt", "key": "MQTT_PASSWORD"
+    }
+  }
+}
+```
+
+Each controller needs authorized Infisical bootstrap credentials. The bridge has
+no separate vault client. A binding is resolved freshly at managed start and has
+no fallback to cached or environment values when the vault denies access or is
+unavailable. Readiness exposes names and states, never resolved values.
+
+The installed `runtime-state.manifest.json` declares the runtime snapshot and its
+binary-owned `runtime-config.schema.json`, generated from Zod during build. The
+controller can inspect local requirements and synchronize portable configuration.
+Inline username/password and TLS material (`ca`, `cert`, `key`) remain compatible
+for local legacy configurations but are blocked from automatic public transfer.
+Reviewed device setup accepts both username and password references together and
+always creates the connection stopped. Recipe exports retain authentication
+intent and opaque references while omitting inline values and source endpoints.
+
 ## Validity / Liveliness
 
 UNS attributes can declare how the controller decides whether they are live or stale; in most apps this is primarily used to drive UI liveliness/activity indicators. In app-level modeling we use two modes only:
@@ -395,6 +442,25 @@ Example response body:
   }
 }
 ```
+
+## Publisher target lifecycle
+
+The managed publisher uses `@uns-kit/bridge-core` 3.0.1 and `@uns-kit/core`
+3.0.21. Its configured target set includes every mapping output with its effective
+UNS topic/asset/ObjectType/ObjectId overrides, including stopped connections.
+
+Retargeting, deleting an output, or deleting a connection reconciles advertised
+publisher metadata after the runtime snapshot is saved. Stop preserves configured
+metadata. Initial and retained MQTT messages are allowed before activation; late
+callbacks cannot re-advertise removed targets. Shared targets stay eligible while
+another configured mapping still uses them. Accepted publications drain before
+metadata eviction, with a bounded timeout that returns an error rather than false
+success.
+
+The bridge does not delete UNS definitions or physical history. Removing definitions
+is a separate administrator action; the controller/archiver retain historical sources.
+Credential references and Infisical resolution continue to use the existing node-local
+protocol boundary.
 
 ## Releases
 

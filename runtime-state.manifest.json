@@ -1,0 +1,10 @@
+{
+  "protocol": 1,
+  "file": "runtime-config.json",
+  "schema": "runtime-config.schema.json",
+  "compatibility": "mqtt-runtime-v1",
+  "volatileFields": [
+    "updatedAt"
+  ],
+  "crossController": "public-config"
+}

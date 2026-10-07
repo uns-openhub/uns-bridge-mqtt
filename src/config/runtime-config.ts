@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { runtimeSecretReferenceSchema } from '../runtime/local-secret-references.js';
 
 export const mqttProtocolValues = ['mqtt', 'mqtts', 'ws', 'wss', 'tcp', 'ssl'] as const;
 export const mqttProtocolSchema = z.enum(mqttProtocolValues);
@@ -26,8 +27,8 @@ export const runtimeConnectionConfigSchema = z.object({
   servers: z.array(mqttServerSchema).optional(),
   port: z.number().int().positive().optional(),
   protocol: mqttProtocolSchema.optional(),
-  username: z.string().min(1).optional(),
-  password: z.string().min(1).optional(),
+  username: z.union([z.string().min(1), runtimeSecretReferenceSchema]).optional(),
+  password: z.union([z.string().min(1), runtimeSecretReferenceSchema]).optional(),
   clientId: z.string().min(1).optional(),
   clean: z.boolean().optional(),
   keepalive: z.number().int().positive().optional(),

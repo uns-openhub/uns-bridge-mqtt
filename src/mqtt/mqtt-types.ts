@@ -1,3 +1,5 @@
+import type { RuntimeCredential } from "../runtime/local-secret-references.js";
+
 export type MqttProtocol = "mqtt" | "mqtts" | "ws" | "wss" | "tcp" | "ssl";
 
 export type MqttBridgeServerConfig = {
@@ -23,8 +25,8 @@ export type MqttBridgeConnectionConfig = {
   servers?: MqttBridgeServerConfig[];
   port?: number;
   protocol?: MqttProtocol;
-  username?: string;
-  password?: string;
+  username?: RuntimeCredential;
+  password?: RuntimeCredential;
   clientId?: string;
   clean?: boolean;
   keepalive?: number;

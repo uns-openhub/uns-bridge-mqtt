@@ -20,6 +20,8 @@ import {
 } from "../config/runtime-config.js";
 import { MqttAdapter } from "../mqtt/mqtt-adapter.js";
 import type { MqttBridgeConnectionConfig, MqttBridgeMappingConfig, MqttBridgeValueEvent } from "../mqtt/mqtt-types.js";
+import { devicePreviewBodySchema, deviceAppendBodySchema } from "../runtime/reviewed-device.js";
+import { withValidationErrors } from "./validation-error.js";
 import { RuntimeConfigManager } from "../runtime/runtime-config-manager.js";
 
 const SYSTEM_TOPIC = "system/bridge/mqtt/";
@@ -359,8 +361,8 @@ function createConnectionCreateRequestBody(): NonNullable<IPostEndpointOptions["
             host: { type: "string", example: "localhost" },
             port: { type: "number", example: 1883 },
             protocol: { type: "string", enum: ["mqtt", "mqtts", "ws", "wss", "tcp", "ssl"], example: "mqtt" },
-            username: { type: "string", example: "operator" },
-            password: { type: "string", example: "secret" },
+            username: { oneOf: [{type:"string",description:"Legacy local-only credential"}, {type:"object",additionalProperties:false,required:["provider","key"],properties:{provider:{type:"string",enum:["env"]},key:{type:"string",pattern:"^UNS_RUNTIME_SECRET_[A-Z][A-Z0-9_]{0,95}$"}}}], example:{provider:"env",key:"UNS_RUNTIME_SECRET_MQTT_USER"} },
+            password: { oneOf: [{type:"string",description:"Legacy local-only credential"}, {type:"object",additionalProperties:false,required:["provider","key"],properties:{provider:{type:"string",enum:["env"]},key:{type:"string",pattern:"^UNS_RUNTIME_SECRET_[A-Z][A-Z0-9_]{0,95}$"}}}], example:{provider:"env",key:"UNS_RUNTIME_SECRET_MQTT_PASSWORD"} },
             clientId: { type: "string", example: "uns-bridge-mqtt-broker-a" },
             clean: { type: "boolean", example: true },
             reconnectPeriod: { type: "number", example: 1000 },
@@ -435,8 +437,8 @@ function createConnectionUpdateRequestBody(): NonNullable<IPostEndpointOptions["
             host: { type: "string", example: "localhost" },
             port: { type: "number", example: 1883 },
             protocol: { type: "string", enum: ["mqtt", "mqtts", "ws", "wss", "tcp", "ssl"], example: "mqtt" },
-            username: { type: "string", example: "operator" },
-            password: { type: "string", example: "secret" },
+            username: { oneOf: [{type:"string",description:"Legacy local-only credential"}, {type:"object",additionalProperties:false,required:["provider","key"],properties:{provider:{type:"string",enum:["env"]},key:{type:"string",pattern:"^UNS_RUNTIME_SECRET_[A-Z][A-Z0-9_]{0,95}$"}}}], example:{provider:"env",key:"UNS_RUNTIME_SECRET_MQTT_USER"} },
+            password: { oneOf: [{type:"string",description:"Legacy local-only credential"}, {type:"object",additionalProperties:false,required:["provider","key"],properties:{provider:{type:"string",enum:["env"]},key:{type:"string",pattern:"^UNS_RUNTIME_SECRET_[A-Z][A-Z0-9_]{0,95}$"}}}], example:{provider:"env",key:"UNS_RUNTIME_SECRET_MQTT_PASSWORD"} },
             clientId: { type: "string", example: "uns-bridge-mqtt-broker-a" },
           },
         },
@@ -750,8 +752,54 @@ export function createServiceApis(
     },
   });
 
-  return {
+  // Preserve bridge-core registrations/auth metadata; capture CRUD snapshots inside the manager queue.
+  const mutations: Array<[string, z.ZodType<any>, (snapshot: RuntimeConfigSnapshot, body: any) => RuntimeConfigSnapshot]> = [
+    ["connectionCreate", connectionCreateBodySchema, upsertConnection],
+    ["connectionUpdate", connectionUpdateBodySchema, updateConnection],
+    ["connectionDelete", connectionControlBodySchema, deleteConnection],
+    ["connectionStart", connectionControlBodySchema, startConnection],
+    ["connectionStop", connectionControlBodySchema, stopConnection],
+    ["mappingCreate", mappingCreateBodySchema, upsertMapping],
+    ["mappingUpdate", mappingCreateBodySchema, updateMapping],
+    ["mappingDelete", mappingDeleteBodySchema, deleteMapping],
+  ];
+  for (const [key, schema, mutate] of mutations) {
+    const registration = managementServiceApis[key]!;
+    registration.handler = async event => {
+      const input = schema.parse(event.req.body ?? {});
+      event.res.json(await runtimeConfigManager.mutateConfig(snapshot => mutate(snapshot, input)));
+    };
+  }
+  const apis = {
     ...managementServiceApis,
+    previewDevice: defineServiceApi<BridgeServiceHandler>({
+      topic: SYSTEM_TOPIC, asset: SERVICE_ASSET, objectType: SERVICE_OBJECT_TYPE,
+      objectId: "devices", attribute: "preview-add", method: "POST", tags: ["Configuration"],
+      description: "Validate one new stopped MQTT device without broker or configuration changes",
+      requestBody: { required:true,contentType:"application/json",schemas:[defineDataCatalogSchema({
+        id:"mqtt-reviewed-device-preview",title:"Reviewed MQTT device",contentType:"application/json",fields:[
+          defineDataCatalogField("connection","object","New anonymous broker connection",{required:true}),
+          defineDataCatalogField("mappings","array","Mappings for one explicit UNS device",{required:true}),
+        ],
+      })]},
+      handler: async event => { event.res.json(await runtimeConfigManager.previewNewDevice(devicePreviewBodySchema.parse(event.req.body ?? {}))); },
+    }),
+    appendReviewedDevice: defineServiceApi<BridgeServiceHandler>({
+      topic: SYSTEM_TOPIC, asset: SERVICE_ASSET, objectType: SERVICE_OBJECT_TYPE,
+      objectId: "devices", attribute: "append-reviewed", method: "POST", tags: ["Configuration"],
+      description: "Add one stopped MQTT device only if the reviewed configuration revision is current",
+      requestBody: { required:true,contentType:"application/json",schemas:[defineDataCatalogSchema({
+        id:"mqtt-reviewed-device-append",title:"Append reviewed MQTT device",contentType:"application/json",fields:[
+          defineDataCatalogField("connection","object","Reviewed anonymous broker connection",{required:true}),
+          defineDataCatalogField("mappings","array","Reviewed mappings for one explicit UNS device",{required:true}),
+          defineDataCatalogField("expectedRevision","string","SHA-256 revision returned by preview",{required:true}),
+        ],
+      })]},
+      handler: async event => {
+        const {expectedRevision, ...device} = deviceAppendBodySchema.parse(event.req.body ?? {});
+        event.res.json(await runtimeConfigManager.appendReviewedDevice(device, expectedRevision));
+      },
+    }),
     browseTopics: defineServiceApi<BridgeServiceHandler>({
       topic: SYSTEM_TOPIC,
       asset: SERVICE_ASSET,
@@ -794,4 +842,5 @@ export function createServiceApis(
       },
     }),
   };
+  return Object.fromEntries(Object.entries(apis).map(([key, registration]) => [key, {...registration, handler: withValidationErrors(registration.handler)}]));
 }

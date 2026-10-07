@@ -105,7 +105,7 @@ function resolveOutputs(mapping: MqttBridgeMappingConfig): MqttBridgeOutputConfi
   return validOutputs;
 }
 
-function resolveTarget(mapping: MqttBridgeMappingConfig, output: MqttBridgeOutputConfig): MqttBridgeSharedTargetConfig {
+export function resolveMqttTarget(mapping: MqttBridgeMappingConfig, output: MqttBridgeOutputConfig): MqttBridgeSharedTargetConfig {
   return {
     topic: output.topic ?? mapping.topic,
     asset: output.asset ?? mapping.asset,
@@ -190,7 +190,7 @@ export const mqttNormalizer: ValueEventNormalizer<MqttBridgeMappingConfig, MqttB
   const grouped = new Map<string, { target: MqttBridgeSharedTargetConfig; attributes: IMqttAttributeEntry[] }>();
 
   for (const output of resolveOutputs(mapping)) {
-    const target = resolveTarget(mapping, output);
+    const target = resolveMqttTarget(mapping, output);
     const key = [
       target.topic,
       target.asset,

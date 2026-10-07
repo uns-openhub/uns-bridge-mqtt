@@ -10,6 +10,8 @@ import type {
   MqttBridgeConnectionConfig,
 } from './mqtt-types.js';
 
+import { redactMqttError, resolveMqttCredentials } from '../runtime/local-secret-references.js';
+
 const logger = getLogger(import.meta.url);
 
 export function buildMqttClientConfig(config: MqttBridgeConnectionConfig): {
@@ -49,8 +51,7 @@ export function buildMqttClientConfig(config: MqttBridgeConnectionConfig): {
       );
 
   const options = {
-    ...(config.username ? { username: config.username } : {}),
-    ...(config.password ? { password: config.password } : {}),
+    ...resolveMqttCredentials(config),
     ...(config.clientId ? { clientId: config.clientId } : {}),
     ...(config.clean !== undefined ? { clean: config.clean } : {}),
     ...(config.keepalive !== undefined ? { keepalive: config.keepalive } : {}),
@@ -72,7 +73,7 @@ export function buildMqttClientConfig(config: MqttBridgeConnectionConfig): {
     url,
     options,
     details: {
-      url,
+      url: url.replace(/:\/\/[^/\s@]+@/, "://[redacted]@"),
       host: config.host,
       hosts: config.hosts,
       servers,
@@ -88,6 +89,8 @@ export async function checkMqttSourceConnection(config: MqttBridgeConnectionConf
 
   try {
     await waitForConnect(client, config.connectTimeout ?? 10000);
+  } catch (error) {
+    throw new Error(redactMqttError(error, config));
   } finally {
     await endClient(client);
   }
@@ -397,8 +400,9 @@ export async function browseTopics(input: MqttBrowseTopicsInput): Promise<MqttBr
       children: topics,
     };
   } catch (error) {
-    logger.error(`MQTT browse failed: ${error instanceof Error ? error.message : String(error)}`);
-    throw error;
+    const message = redactMqttError(error, input.config);
+    logger.error(`MQTT browse failed: ${message}`);
+    throw new Error(message);
   } finally {
     await endClient(client);
   }

@@ -1,6 +1,7 @@
 import mqtt, { type IPublishPacket, type MqttClient } from "mqtt";
 import type { MappingDefinition, ProtocolConnection } from "@uns-kit/bridge-core";
 import { getLogger } from "@uns-kit/core";
+import { redactMqttError } from "../runtime/local-secret-references.js";
 import { buildMqttClientConfig } from "./mqtt-topic-browser.js";
 import type {
   MqttBridgeConnectionConfig,
@@ -227,11 +228,11 @@ export class MqttConnection
       return;
     }
 
+    const { url, options, details } = buildMqttClientConfig(this.config);
     this.state = "starting";
     this.connected = false;
     this.touch();
 
-    const { url, options, details } = buildMqttClientConfig(this.config);
     const client = mqtt.connect(url, options);
     this.client = client;
 
@@ -245,7 +246,7 @@ export class MqttConnection
         await this.subscribeAllMappings();
       } catch (error) {
         this.state = "error";
-        this.message = error instanceof Error ? error.message : String(error);
+        this.message = redactMqttError(error, this.config);
         this.touch();
       }
     });
@@ -273,9 +274,9 @@ export class MqttConnection
     client.on("error", (error) => {
       this.state = "error";
       this.connected = false;
-      this.message = error.message;
+      this.message = redactMqttError(error, this.config);
       this.touch();
-      logger.error(`MQTT connection '${this.id}' error: ${error.message}`);
+      logger.error(`MQTT connection '${this.id}' error: ${this.message}`);
     });
 
     client.on("message", (topic, payload, packet) => {
@@ -309,10 +310,10 @@ export class MqttConnection
     }).catch(async (error) => {
       this.state = "error";
       this.connected = false;
-      this.message = error instanceof Error ? error.message : String(error);
+      this.message = redactMqttError(error, this.config);
       this.touch();
       await endClient(client);
-      throw error;
+      throw new Error(redactMqttError(error, this.config));
     });
 
     logger.info(`Started MQTT connection '${this.id}'`, details);
@@ -432,7 +433,7 @@ export class MqttConnection
           ...(payloadJson !== undefined ? { payloadJson } : {}),
         });
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = redactMqttError(error, this.config);
         if (error instanceof PayloadMismatchError) {
           logger.warn(
             `Skipping MQTT message for mapping '${mapping.definition.id}' on topic '${topic}': payload not as expected (${message})`,

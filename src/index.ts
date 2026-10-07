@@ -3,7 +3,7 @@ import '@uns-kit/api';
 import './config/app-config.js';
 import { buildUnsRoutePath } from '@uns-kit/core/uns/uns-path.js';
 import { registerApiCatalog, type UnsApiProxy, type UnsProxyProcessWithApi } from '@uns-kit/api';
-import { bridgeSettingsSchema, BridgeEngine } from '@uns-kit/bridge-core';
+import { bridgeSettingsSchema, BridgeEngine, ManagedBridgePublisher } from '@uns-kit/bridge-core';
 import { createServiceApis } from './api/routes.js';
 import { toConnectionConfig } from './config/mqtt-config-mappers.js';
 import { MqttAdapter } from './mqtt/mqtt-adapter.js';
@@ -13,6 +13,7 @@ import type { MqttBridgeConnectionConfig, MqttBridgeMappingConfig, MqttBridgeVal
 import type { RuntimeConfigSnapshot } from './config/runtime-config.js';
 import { RuntimeConfigManager } from './runtime/runtime-config-manager.js';
 import { RuntimeConfigStore } from './runtime/runtime-config-store.js';
+import { configuredMqttTargets } from './runtime/publisher-targets.js';
 
 const runtimeConfigPath = process.env['UNS_BRIDGE_RUNTIME_CONFIG_PATH'] ?? 'runtime-config.json';
 const sourceHealthCheckIntervalMs = 30_000;
@@ -70,19 +71,27 @@ function validatePublishRequest(request: IMqttPublishRequest): void {
   }
 }
 
+const publisher = new ManagedBridgePublisher(
+  async (request: IMqttPublishRequest): Promise<void> => {
+    validatePublishRequest(request);
+    await publisherProxy.publishMqttMessage(request);
+  },
+  paths => publisherProxy.retainProducedTopics(paths),
+);
+
 const engine = new BridgeEngine<MqttBridgeConnectionConfig, MqttBridgeMappingConfig, MqttBridgeValueEvent>(
   adapter,
-  {
-    publish: async (request: IMqttPublishRequest): Promise<void> => {
-      validatePublishRequest(request);
-      await publisherProxy.publishMqttMessage(request);
-    },
-  },
+  publisher,
   mqttNormalizer,
 );
 
 const runtimeConfigStore = new RuntimeConfigStore(runtimeConfigPath);
-const runtimeConfigManager = new RuntimeConfigManager(engine, runtimeConfigStore);
+const runtimeConfigManager = new RuntimeConfigManager(
+  engine,
+  runtimeConfigStore,
+  snapshot => publisher.reconcile(configuredMqttTargets(snapshot)),
+  async snapshot => { publisher.allowTargets(configuredMqttTargets(snapshot)); },
+);
 
 if (!config.uns.jwksWellKnownUrl) {
   throw new Error('config.uns.jwksWellKnownUrl is required');

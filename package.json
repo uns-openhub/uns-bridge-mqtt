@@ -46,8 +46,9 @@
     "generate-config-schema": "node ./node_modules/@uns-kit/core/dist/tools/generate-config-schema.js",
     "generate-codegen": "graphql-code-generator --require dotenv/config --config codegen.ts",
     "sync-uns-schema": "node ./node_modules/@uns-kit/core/dist/tools/sync-uns-schema.js",
-    "verify": "pnpm run typecheck && pnpm run lint && pnpm run build",
-    "check-release-version": "node scripts/check-release-version.mjs"
+    "verify": "pnpm run typecheck && pnpm run lint && pnpm run test && pnpm run build",
+    "check-release-version": "node scripts/check-release-version.mjs",
+    "test": "tsx --test src/runtime/*.test.ts"
   },
   "dependencies": {
     "@uns-kit/api": "^3.0.21",

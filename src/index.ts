@@ -1,8 +1,10 @@
+import { registerManagementApiCatalog as registerApiCatalog } from './management-api-catalog.js';
+import { mqttChannelParameters, resolveMqttChannel, type MqttChannelConfig } from '@uns-kit/core/uns-config/mqtt-channel.js';
 import { ConfigFile, UnsProxyProcess, getLogger, type IApiProxyOptions, type IMqttPublishRequest } from '@uns-kit/core';
 import '@uns-kit/api';
 import './config/app-config.js';
 import { buildUnsRoutePath } from '@uns-kit/core/uns/uns-path.js';
-import { registerApiCatalog, type UnsApiProxy, type UnsProxyProcessWithApi } from '@uns-kit/api';
+import { type UnsApiProxy, type UnsProxyProcessWithApi } from '@uns-kit/api';
 import { bridgeSettingsSchema, BridgeEngine, ManagedBridgePublisher } from '@uns-kit/bridge-core';
 import { createServiceApis } from './api/routes.js';
 import { toConnectionConfig } from './config/mqtt-config-mappers.js';
@@ -40,20 +42,21 @@ const bridgeSettings = bridgeSettingsSchema.parse(config.bridge);
 const instanceMode = config.uns.instanceMode ?? 'wait';
 const handover = config.uns.handover ?? true;
 
-const processHost = config.infra.host ?? config.output?.host;
-if (!processHost) {
-  throw new Error('infra.host or output.host must be configured');
-}
+const infraChannel = resolveMqttChannel(config.infra as MqttChannelConfig, (config.infra.host || config.infra.hosts?.length || config.infra.servers?.length) ? undefined : config.output as MqttChannelConfig | undefined);
+const outputChannel = resolveMqttChannel(infraChannel, config.output as MqttChannelConfig | undefined);
+const processHost = infraChannel.host;
 
 const unsProxyProcess = new UnsProxyProcess(processHost, {
+  ...mqttChannelParameters(infraChannel),
   processName: config.uns.processName,
 }) as UnsProxyProcessWithApi;
 
 const publisherProxy = await unsProxyProcess.createUnsMqttProxy(
-  config.output?.host ?? processHost,
+  outputChannel.host,
   bridgeSettings.publisher.instanceName,
   instanceMode,
   handover,
+  mqttChannelParameters(outputChannel),
 );
 
 const adapter = new MqttAdapter(bridgeSettings.retry);
